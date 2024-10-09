@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="cart.js"></script>
+    <script src="category.js"></script>
+    <script src="checkout.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/porter-sans-block" rel="stylesheet">
+    <title>Our Menu</title>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="#" class="logo">
+            Super<br>Shop
+        </a>
+        <ul class="nav-links">
+            <li><a href="#">Catalog</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+        <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
+    </nav>
+
+    <!-- Menu Section -->
+    <section class="menu-section">
+        <div class="menu-container">
+            <h1 class="menu-title">Catalog</h1>
+            <div class="menu-grid">
+
+            </div>
+        </div>
+    </section>
+
+<!-- Cart Icon -->
+<button id="cart-icon" class="cart-icon">
+    <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+</button>
+
+<!-- Cart Modal -->
+<section id="cart-modal" class="modal">
+    <div class="modal-content">
+        <span id="close-modal" class="close">&times;</span>
+            <h2>Your Cart</h2>
+            <div class="cart-container">
+                <!-- Cart items will be displayed here -->
+            </div>
+    </div>
+</section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="footer-logo">
+                    THE<br>COZY<br>CUP
+                </div>
+                <div class="copyright">
+                    © 2024 The Cozy Cup. All Rights Reserved.
+                </div>
+            </div>
+            <div class="footer-section">
+                <div class="footer-section1">
+                    <h3>Operating Hours</h3>
+                    <p>Monday - Sunday</p>
+                    <p>8:00 AM - 10:00 PM</p>
+                </div>
+                <div class="footer-section2">
+                    <h3>Social Media</h3>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Information</h3>
+                <p>Jalan Kopi No. 27, Jakarta, Indonesia</p>
+                <p>Phone: 081922391827</p>
+                <p>Email: hello@thecozycup.id</p>
+                <div class="map-location">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3164.6225639272!2d-122.08424968468693!3d37.42199997982133!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808fba82e447f2ff%3A0x1b67d1a7d9c2fdee!2sGoogleplex!5e0!3m2!1sen!2sus!4v1615336058977!5m2!1sen!2sus" 
+                        allowfullscreen="" 
+                        width="80%" 
+                        height="100px" 
+                        style="border:0;" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+            <div class="copyright2">
+                © 2024 The Cozy Cup. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
