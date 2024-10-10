@@ -1,48 +1,87 @@
 console.log("Application initialized");
 
-// Cart array to store cart items
 let cart = [];
+const totalProducts = 200;
+const productsPerPage = 20; 
+const totalPages = Math.ceil(totalProducts / productsPerPage); 
+let currentPage = 1; 
 
-// Fetch product data from API
-fetch('https://dummyjson.com/products')
-    .then(res => res.json())
-    .then(data => {
-        const menuGrid = document.querySelector('.menu-grid');
-        data.products.forEach(product => {
-            const menuItem = document.createElement('div');
-            menuItem.classList.add('menu-item');
+async function fetchProducts(page) {
+    const response = await fetch(`https://dummyjson.com/products?limit=${productsPerPage}&skip=${(page - 1) * productsPerPage}`);
+    const data = await response.json();
+    return data.products;
+}
 
-            menuItem.innerHTML = `
-                <img src="${product.thumbnail}" alt="${product.title}">
-                <h3>${product.title}</h3>
-                <p>Rp. ${product.price}</p>
-                <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>
-            `;
-            
-            menuGrid.appendChild(menuItem);
-        });
+async function displayProducts(page) {
+    const products = await fetchProducts(page);
+    const menuGrid = document.querySelector('.menu-grid');
+    menuGrid.innerHTML = ''; 
 
-        // Add event listeners to 'Add to Cart' buttons
-        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-            button.addEventListener('click', addToCart);
-        });
+    products.forEach(product => {
+        const menuItem = document.createElement('div');
+        menuItem.classList.add('menu-item');
 
-        // Add event listeners to 'Remove from Cart' buttons
-        document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
-            button.addEventListener('click', removeFromCart);
-        });
-    })
-    .catch(error => {
-        console.error('Error fetching data:', error);
+        menuItem.innerHTML = `
+            <img src="${product.thumbnail}" alt="${product.title}">
+            <h3>${product.title}</h3>
+            <p> $ ${product.price}</p>
+            <button class="add-to-cart-btn" data-id="${product.id}" data-stock="${product.stock}">Add to Cart</button>
+        `;
+
+        menuGrid.appendChild(menuItem);
     });
+
+    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+        button.addEventListener('click', addToCart);
+    });
+}
+
+function setupPagination() {
+    const paginationContainer = document.querySelector('.pagination');
+    paginationContainer.innerHTML = ''; 
+
+    for (let page = 1; page <= totalPages; page++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = page;
+        pageButton.classList.add('page-btn');
+        pageButton.dataset.page = page;
+
+        pageButton.addEventListener('click', () => {
+            currentPage = page;
+            displayProducts(currentPage);
+            updatePaginationButtons();
+        });
+
+        paginationContainer.appendChild(pageButton);
+    }
+}
+
+function updatePaginationButtons() {
+    const pageButtons = document.querySelectorAll('.page-btn');
+    pageButtons.forEach(button => {
+        button.classList.remove('active'); 
+        if (button.dataset.page == currentPage) {
+            button.classList.add('active');
+        }
+    });
+}
+
+async function init() {
+    await displayProducts(currentPage);
+    setupPagination();
+}
+
+init(); 
 
 function addToCart(event) {
     const productId = event.target.dataset.id;
-
+    const productStock = parseInt(event.target.dataset.stock);
     const existingProduct = cart.find(item => item.id == productId);
 
     if (existingProduct) {
-        existingProduct.quantity++;
+        if (existingProduct.quantity < productStock) {
+            existingProduct.quantity++;
+        }
     } else {
         const productElement = event.target.parentElement;
         const productTitle = productElement.querySelector('h3').textContent;
@@ -54,13 +93,27 @@ function addToCart(event) {
             title: productTitle,
             price: productPrice,
             thumbnail: productThumbnail,
-            quantity: 1
+            quantity: 1, 
+            stock: productStock // Store stock in the cart
         });
     }
 
+    event.target.style.display = 'none';
+    const quantityControls = document.createElement('div');
+    quantityControls.classList.add('quantity-controls');
+    quantityControls.innerHTML = `
+        <button class="decrease-btn" data-id="${productId}">-</button>
+        <p class="quantity-cont"><span class="quantity">1</span></p>
+        <button class="increase-btn" data-id="${productId}">+</button>
+    `;
+    event.target.parentElement.appendChild(quantityControls);
+
+    document.querySelectorAll('.decrease-btn').forEach(button => {
+        button.addEventListener('click', decreaseQuantity);
+    });
+
     updateCartDisplay();
 }
-
 
 function updateCartDisplay() {
     const cartContainer = document.querySelector('.cart-container');
@@ -71,38 +124,125 @@ function updateCartDisplay() {
             const cartItem = document.createElement('div');
             cartItem.classList.add('cart-item');
             cartItem.innerHTML = `
+                <div class="img-cart">
                 <img src="${item.thumbnail}" alt="${item.title}">
+                <div class="cart-cont">
                 <h4>${item.title}</h4>
                 <p>${item.price}</p>
-                <p>Quantity: ${item.quantity}</p>
+                </div>
+                </div>
+                <div class="cart-btn-section">
+                <div class="quant-control">
+                <button class="decrease-btn-cart" data-id="${item.id}">-</button>
+                <p class="quantity-cont"><span class="quantity">${item.quantity}</span></p>
+                <button class="increase-btn-cart" data-id="${item.id}">+</button>
+                </div>
+                </div>
             `;
             cartContainer.appendChild(cartItem);
         });
+
+        document.querySelectorAll('.decrease-btn').forEach(button => {
+            button.addEventListener('click', decreaseQuantity);
+        });
+        document.querySelectorAll('.decrease-btn-cart').forEach(button => {
+            button.addEventListener('click', decreaseQuantity);
+        });
+
+        document.querySelectorAll('.increase-btn').forEach(button => {
+            button.addEventListener('click', increaseQuantity);
+        });
+        document.querySelectorAll('.increase-btn-cart').forEach(button => {
+            button.addEventListener('click', increaseQuantity);
+        });
     } else {
-        cartContainer.innerHTML = '<p>Your cart is empty.</p>';
+        cartContainer.innerHTML = '<p class="empty-cart">Your cart is empty.</p>';
     }
 }
 
+function removeQuantityControls(productId) {
+    const catalogItem = document.querySelector(`[data-id="${productId}"]`);
+
+    if (catalogItem) {
+        const quantityControls = catalogItem.parentElement.querySelector('.quantity-controls');
+        const addToCartButton = catalogItem.parentElement.querySelector('.add-to-cart-btn');
+
+        if (quantityControls) {
+            quantityControls.remove();
+        }
+
+        if (addToCartButton) {
+            addToCartButton.style.display = 'block';
+        }
+    }
+}
+
+function decreaseQuantity(event) {
+    const productId = event.target.dataset.id;
+    const existingProduct = cart.find(item => item.id == productId);
+
+    if (existingProduct) {
+        existingProduct.quantity--;
+
+        const cartQuantitySpan = event.target.parentElement.querySelector('.quantity');
+        const catalogQuantitySpan = document.querySelector(`.menu-item [data-id="${productId}"]`)
+            ?.parentElement.querySelector('.quantity-cont .quantity');
+
+        // Update quantity in cart
+        if (existingProduct.quantity <= 0) {
+            cart = cart.filter(item => item.id != productId);
+            removeQuantityControls(productId);
+        } else {
+            cartQuantitySpan.textContent = existingProduct.quantity;
+            if (catalogQuantitySpan) catalogQuantitySpan.textContent = existingProduct.quantity;
+        }
+
+        // If the item is removed from the cart, show 'Add to Cart' button in the menu
+        if (existingProduct.quantity <= 0) {
+            removeQuantityControls(productId);
+        }
+    }
+
+    updateCartDisplay(); 
+}
+
+function increaseQuantity(event) {
+    const productId = event.target.dataset.id;
+    const existingProduct = cart.find(item => item.id == productId);
+
+    if (existingProduct && existingProduct.quantity < existingProduct.stock) {
+        existingProduct.quantity++;
+
+        const cartQuantitySpan = event.target.parentElement.querySelector('.quantity');
+        const catalogQuantitySpan = document.querySelector(`.menu-item [data-id="${productId}"]`)
+            ?.parentElement.querySelector('.quantity-cont .quantity');
+
+        // Update quantity in both cart and menu
+        cartQuantitySpan.textContent = existingProduct.quantity;
+        if (catalogQuantitySpan) catalogQuantitySpan.textContent = existingProduct.quantity;
+    }
+
+    updateCartDisplay();
+}
+
+
 document.addEventListener("DOMContentLoaded", function() {
-    // Get the modal and elements
     const modal = document.getElementById("cart-modal");
     const cartIcon = document.getElementById("cart-icon");
     const closeModal = document.getElementById("close-modal");
 
-    // When the cart icon is clicked, show the modal
     cartIcon.onclick = function() {
         modal.style.display = "block";
+        updateCartDisplay();
     }
 
-    // When the user clicks the close button (X), hide the modal
     closeModal.onclick = function() {
         modal.style.display = "none";
     }
 
-    // When the user clicks outside the modal, close it
     window.onclick = function(event) {
         if (event.target == modal) {
             modal.style.display = "none";
         }
     }
-});
+});  
