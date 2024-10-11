@@ -1,95 +1,79 @@
-let categories = [];
-let selectedCategory = 'all';
-let currentPage = 1;
-const productsPerPage = 10; // Add product limit per page
+console.log("Category module initialized");
 
-// Function to fetch categories
 async function fetchCategories() {
     try {
         const response = await fetch('https://dummyjson.com/products/categories');
-        categories = await response.json();
-        displayCategories();
+        const categories = await response.json();
+        return categories;  // Pastikan ini array dengan objek kategori
     } catch (error) {
         console.error('Error fetching categories:', error);
-    }
-}
-
-// Function to display categories
-function displayCategories() {
-    const categoryContainer = document.querySelector('.category-container');
-    categoryContainer.innerHTML = '<button class="category-btn active" data-category="all">All</button>';
-    categories.forEach(category => {
-        const categoryButton = document.createElement('button');
-        categoryButton.classList.add('category-btn');
-        categoryButton.textContent = category;
-        categoryButton.dataset.category = category;
-        categoryButton.addEventListener('click', () => filterByCategory(category));
-        categoryContainer.appendChild(categoryButton);
-    });
-}
-
-// Function to filter by category
-function filterByCategory(category) {
-    selectedCategory = category;
-    currentPage = 1;
-    displayProducts(currentPage);
-    updateCategoryButtons();
-}
-
-// Function to update active category buttons
-function updateCategoryButtons() {
-    const categoryButtons = document.querySelectorAll('.category-btn');
-    categoryButtons.forEach(button => {
-        button.classList.toggle('active', button.dataset.category === selectedCategory);
-    });
-}
-
-// Function to fetch products based on page and category
-async function fetchProducts(page) {
-    const limit = productsPerPage;
-    const skip = (page - 1) * productsPerPage;
-    let url = `https://dummyjson.com/products?limit=${limit}&skip=${skip}`;
-    
-    if (selectedCategory !== 'all') {
-        url = `https://dummyjson.com/products/category/${selectedCategory}?limit=${limit}&skip=${skip}`;
-    }
-
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-        return data.products;
-    } catch (error) {
-        console.error('Error fetching products:', error);
         return [];
     }
 }
 
-// Function to display products (simple example for displaying products)
-async function displayProducts(page) {
-    const products = await fetchProducts(page);
-    const productContainer = document.querySelector('.product-container');
-    productContainer.innerHTML = ''; // Clear the product container
+async function displayCategories() {
+    const categories = await fetchCategories();
+    const dropdown = document.querySelector('#category-dropdown');
+    dropdown.innerHTML = '';
 
-    products.forEach(product => {
-        const productElement = document.createElement('div');
-        productElement.classList.add('product');
-        productElement.textContent = product.title; // Just an example, you can add other elements as needed
-        productContainer.appendChild(productElement);
+    // Tambahkan opsi default
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Category';
+    dropdown.appendChild(defaultOption);
+
+    // Menambahkan kategori ke dalam dropdown
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.slug;  // Gunakan 'slug' sebagai nilai
+        option.textContent = category.name;  // Tampilkan nama kategori
+        dropdown.appendChild(option);
+    });
+
+    // Event listener untuk perubahan dropdown
+    dropdown.addEventListener('change', () => {
+        const selectedCategory = dropdown.value;
+        if (selectedCategory) {
+            filterByCategory(selectedCategory);
+        }
     });
 }
 
-// Start by fetching categories and displaying the first page of products
-fetchCategories();
-displayProducts(currentPage);
+async function filterByCategory(categorySlug) {
+    try {
+        const response = await fetch(`https://dummyjson.com/products/category/${categorySlug}?limit=${productsPerPage}`);
+        const data = await response.json();
+        const products = data.products;
 
-//  add item in page
-function changeItemsPerPage(newItemsPerPage) {
-    productsPerPage = parseInt(newItemsPerPage);
-    currentPage = 1;
-    displayProducts(currentPage);
-    setupPagination();
+        const menuGrid = document.querySelector('.menu-grid');
+        menuGrid.innerHTML = '';
+
+        products.forEach(product => {
+            const menuItem = document.createElement('div');
+            menuItem.classList.add('menu-item');
+
+            menuItem.innerHTML = `
+                <img src="${product.thumbnail}" alt="${product.title}">
+                <h3>${product.title}</h3>
+                <p>$ ${product.price}</p>
+                <button class="add-to-cart-btn" data-id="${product.id}" data-stock="${product.stock}">Add to Cart</button>
+            `;
+
+            menuGrid.appendChild(menuItem);
+        });
+
+        // Tambahkan event listener untuk tombol "Add to Cart"
+        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+            button.addEventListener('click', addToCart);
+        });
+    } catch (error) {
+        console.error('Error fetching products by category:', error);
+    }
 }
-// add eventlistener
-document.querySelector('#items-per-page').addEventListener('change', (e) => {
-    changeItemsPerPage(e.target.value);
+
+// Inisialisasi kategori ketika halaman siap
+document.addEventListener("DOMContentLoaded", function() {
+    displayCategories();
 });
+
+

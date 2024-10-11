@@ -2,20 +2,43 @@ console.log("Application initialized");
 
 let cart = [];
 const totalProducts = 200;
-const productsPerPage = 20;
-const totalPages = Math.ceil(totalProducts / productsPerPage);
+let productsPerPage = 20; // Default number of products per page
+let totalPages = Math.ceil(totalProducts / productsPerPage);
 let currentPage = 1;
+let searchQuery = '';  // Store the search query
+let sortOrder = '';  // New variable to store the sorting order
 
-async function fetchProducts(page) {
-    const response = await fetch(`https://dummyjson.com/products?limit=${productsPerPage}&skip=${(page - 1) * productsPerPage}`);
+async function fetchProducts(page, searchQuery = '', sortOrder = '') {
+    let url = `https://dummyjson.com/products?limit=${productsPerPage}&skip=${(page - 1) * productsPerPage}`;
+
+    if (searchQuery) {
+        url = `https://dummyjson.com/products/search?q=${searchQuery}&limit=${productsPerPage}&skip=${(page - 1) * productsPerPage}`;
+    }
+
+    const response = await fetch(url);
     const data = await response.json();
-    return data.products;
+
+    let products = data.products;
+
+    // Apply sorting based on price
+    if (sortOrder === 'low-to-high') {
+        products = products.sort((a, b) => a.price - b.price);
+    } else if (sortOrder === 'high-to-low') {
+        products = products.sort((a, b) => b.price - a.price);
+    }
+
+    return products;
 }
 
-async function displayProducts(page) {
-    const products = await fetchProducts(page);
+async function displayProducts(page, searchQuery = '', sortOrder = '') {
+    const products = await fetchProducts(page, searchQuery, sortOrder);
     const menuGrid = document.querySelector('.menu-grid');
     menuGrid.innerHTML = '';
+
+    if (products.length === 0) {
+        menuGrid.innerHTML = '<p>No products found.</p>';
+        return;
+    }
 
     products.forEach(product => {
         const menuItem = document.createElement('div');
@@ -36,6 +59,35 @@ async function displayProducts(page) {
     });
 }
 
+function handleSearch() {
+    const searchBar = document.getElementById('search-bar');
+    searchBar.addEventListener('input', () => {
+        searchQuery = searchBar.value.toLowerCase();
+        currentPage = 1;
+        displayProducts(currentPage, searchQuery, sortOrder); // Pass sortOrder for consistent sorting
+        setupPagination();
+    });
+}
+
+function handleSort() {
+    const sortDropdown = document.getElementById('sort-dropdown');
+    sortDropdown.addEventListener('change', () => {
+        sortOrder = sortDropdown.value;
+        displayProducts(currentPage, searchQuery, sortOrder); // Update display with sorted products
+    });
+}
+
+function handleItemsPerPageChange() {
+    const itemsPerPageDropdown = document.getElementById('items-per-page-dropdown');
+    itemsPerPageDropdown.addEventListener('change', () => {
+        productsPerPage = parseInt(itemsPerPageDropdown.value);
+        totalPages = Math.ceil(totalProducts / productsPerPage); // Update total pages
+        currentPage = 1; // Reset to first page
+        displayProducts(currentPage, searchQuery, sortOrder); // Update display
+        setupPagination(); // Re-setup pagination
+    });
+}
+
 function setupPagination() {
     const paginationContainer = document.querySelector('.pagination');
     paginationContainer.innerHTML = '';
@@ -48,7 +100,7 @@ function setupPagination() {
 
         pageButton.addEventListener('click', () => {
             currentPage = page;
-            displayProducts(currentPage);
+            displayProducts(currentPage, searchQuery, sortOrder); // Pass sortOrder to maintain sorting across pages
             updatePaginationButtons();
         });
 
@@ -67,11 +119,20 @@ function updatePaginationButtons() {
 }
 
 async function init() {
+    await displayProducts(currentPage, searchQuery, sortOrder);
+    loadCart(); // Memuat cart dari Local Storage saat halaman dimuat
     await displayProducts(currentPage);
     setupPagination();
+    updateCartDisplay(); // Perbarui tampilan keranjang setelah memuat data
+    handleSearch(); // Initialize search functionality
+    handleSort(); // Initialize sort functionality
+    handleItemsPerPageChange(); // Initialize items per page functionality
 }
 
 init();
+
+
+
 
 function addToCart(event) {
     const productId = event.target.dataset.id;
@@ -111,7 +172,7 @@ function addToCart(event) {
     document.querySelectorAll('.decrease-btn').forEach(button => {
         button.addEventListener('click', decreaseQuantity);
     });
-
+    saveCart();
     updateCartDisplay();
 }
 
@@ -152,7 +213,7 @@ function updateCartDisplay() {
         cartContainer.innerHTML = '<p class="empty-cart">Your cart is empty.</p>';
     }
 
-    calculateTotal(); // Call calculateTotal to recalculate total products and prices
+    calculateTotal();  
 }
 
 function removeQuantityControls(productId) {
@@ -195,7 +256,7 @@ function decreaseQuantity(event) {
             removeQuantityControls(productId);
         }
     }
-
+    saveCart();
     updateCartDisplay();
 }
 
@@ -214,6 +275,8 @@ function increaseQuantity(event) {
         if (catalogQuantitySpan) catalogQuantitySpan.textContent = existingProduct.quantity;
     }
 
+    saveCart();
+
     updateCartDisplay();
 }
 
@@ -230,23 +293,33 @@ function calculateTotal() {
     document.querySelector('.total-price').textContent = `Total Price: $${totalPrice.toFixed(2)}`;
 }
 
-function saveCartToLocalStorage() {
+// Simpan cart ke Local Storage
+function saveCart() {
     localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-function loadCartFromLocalStorage() {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-        cart = JSON.parse(savedCart);
+// Ambil cart dari Local Storage
+function loadCart() {
+    const storedCart = localStorage.getItem('cart');
+    if (storedCart) {
+        cart = JSON.parse(storedCart);
     }
+}
+
+
+
+function checkout () {
+    alert('Thank you for your purchase!');
+    cart = [];
+    saveCart();
     updateCartDisplay();
-    calculateTotal();
 }
 
 document.addEventListener("DOMContentLoaded", function() {
     const modal = document.getElementById("cart-modal");
     const cartIcon = document.getElementById("cart-icon");
     const closeModal = document.getElementById("close-modal");
+    const checkoutBtn = document.getElementById("checkout-btn"); // Ensure this matches the button's ID
 
     cartIcon.onclick = function() {
         modal.style.display = "block";
@@ -261,5 +334,9 @@ document.addEventListener("DOMContentLoaded", function() {
         if (event.target == modal) {
             modal.style.display = "none";
         }
+    }
+
+    if (checkoutBtn) { // Ensure the button exists before adding the event listener
+        checkoutBtn.addEventListener('click', checkout);
     }
 });

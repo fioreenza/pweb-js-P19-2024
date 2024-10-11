@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script src="cart.js"></script>
-    <script src="localstorage.js"></script>
-    <script src="checkout.js"></script>
+    <script src="category.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.cdnfonts.com/css/porter-sans-block" rel="stylesheet">
@@ -26,40 +25,63 @@
         <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
     </nav>
 
+    
     <!-- Menu Section -->
     <section class="menu-section">
         <div class="menu-container">
             <h1 class="menu-title">Catalog</h1>
+            <input type="text" id="search-bar" placeholder="Search products...">
+            <div class="sort">
+            <div class="category-section">
+                <select id="items-per-page-dropdown">
+                    <option value="default">No of Item</option>
+                    <option value="10">10 items per page</option>
+                    <option value="20">20 items per page</option>
+                    <option value="30">30 items per page</option>
+                    <option value="50">50 items per page</option>
+                </select>
+            </div> 
+            <div class="category-section">
+            <select id="category-dropdown" class="category-dropdown">
+            </select>
+            </div>
+            <div class="category-section">
+            <select id="sort-dropdown">
+                <option value="default">Sort Price</option>
+                <option value="low-to-high">Price: Low to High</option>
+                <option value="high-to-low">Price: High to Low</option>
+            </select>
+            </div>
+        </div>
+            
+
+            
+
+<!-- Menu Grid untuk produk -->
+<div class="menu-grid"></div>
+
             <div class="menu-grid">
             </div>
             <div class="pagination"></div>
         </div>
     </section>
 
-    <!-- Category and Pagination Controls -->
-    <div class="category-container"></div>
-    <select id="items-per-page">
-        <option value="10">10 per page</option>
-        <option value="20" selected>20 per page</option>
-        <option value="50">50 per page</option>
-    </select>
-    <button id="checkout-btn">Checkout</button>
-
 <!-- Cart Icon -->
 <button id="cart-icon" class="cart-icon">
-    <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+    <i id="cart-icons" class="fa fa-shopping-cart" aria-hidden="true"></i>
 </button>
 
 <!-- Cart Modal -->
 <section id="cart-modal" class="modal">
     <div class="modal-content">
+        <div class="content">
+        <div class="modal-close">
+            <h2>Cart</h2>
         <span id="close-modal" class="close">&times;</span>
-        <h2>Cart</h2>
-        
-        <!-- Scrollable Cart Items -->
+    </div>
         <div class="cart-container">
-            <!-- Cart items will be displayed here -->
         </div>
+    </div>
         
         <!-- Checkout Section at the Bottom -->
         <div class="checkout-section">
