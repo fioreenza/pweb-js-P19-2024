@@ -2,9 +2,9 @@ console.log("Application initialized");
 
 let cart = [];
 const totalProducts = 200;
-const productsPerPage = 20; 
-const totalPages = Math.ceil(totalProducts / productsPerPage); 
-let currentPage = 1; 
+const productsPerPage = 20;
+const totalPages = Math.ceil(totalProducts / productsPerPage);
+let currentPage = 1;
 
 async function fetchProducts(page) {
     const response = await fetch(`https://dummyjson.com/products?limit=${productsPerPage}&skip=${(page - 1) * productsPerPage}`);
@@ -15,7 +15,7 @@ async function fetchProducts(page) {
 async function displayProducts(page) {
     const products = await fetchProducts(page);
     const menuGrid = document.querySelector('.menu-grid');
-    menuGrid.innerHTML = ''; 
+    menuGrid.innerHTML = '';
 
     products.forEach(product => {
         const menuItem = document.createElement('div');
@@ -38,7 +38,7 @@ async function displayProducts(page) {
 
 function setupPagination() {
     const paginationContainer = document.querySelector('.pagination');
-    paginationContainer.innerHTML = ''; 
+    paginationContainer.innerHTML = '';
 
     for (let page = 1; page <= totalPages; page++) {
         const pageButton = document.createElement('button');
@@ -59,7 +59,7 @@ function setupPagination() {
 function updatePaginationButtons() {
     const pageButtons = document.querySelectorAll('.page-btn');
     pageButtons.forEach(button => {
-        button.classList.remove('active'); 
+        button.classList.remove('active');
         if (button.dataset.page == currentPage) {
             button.classList.add('active');
         }
@@ -71,7 +71,7 @@ async function init() {
     setupPagination();
 }
 
-init(); 
+init();
 
 function addToCart(event) {
     const productId = event.target.dataset.id;
@@ -93,8 +93,8 @@ function addToCart(event) {
             title: productTitle,
             price: productPrice,
             thumbnail: productThumbnail,
-            quantity: 1, 
-            stock: productStock // Store stock in the cart
+            quantity: 1,
+            stock: productStock
         });
     }
 
@@ -125,32 +125,25 @@ function updateCartDisplay() {
             cartItem.classList.add('cart-item');
             cartItem.innerHTML = `
                 <div class="img-cart">
-                <img src="${item.thumbnail}" alt="${item.title}">
-                <div class="cart-cont">
-                <h4>${item.title}</h4>
-                <p>${item.price}</p>
-                </div>
+                    <img src="${item.thumbnail}" alt="${item.title}">
+                    <div class="cart-cont">
+                        <h4>${item.title}</h4>
+                        <p>${item.price}</p>
+                    </div>
                 </div>
                 <div class="cart-btn-section">
-                <div class="quant-control">
-                <button class="decrease-btn-cart" data-id="${item.id}">-</button>
-                <p class="quantity-cont"><span class="quantity">${item.quantity}</span></p>
-                <button class="increase-btn-cart" data-id="${item.id}">+</button>
-                </div>
+                    <div class="quant-control">
+                        <button class="decrease-btn-cart" data-id="${item.id}">-</button>
+                        <p class="quantity-cont"><span class="quantity">${item.quantity}</span></p>
+                        <button class="increase-btn-cart" data-id="${item.id}">+</button>
+                    </div>
                 </div>
             `;
             cartContainer.appendChild(cartItem);
         });
 
-        document.querySelectorAll('.decrease-btn').forEach(button => {
-            button.addEventListener('click', decreaseQuantity);
-        });
         document.querySelectorAll('.decrease-btn-cart').forEach(button => {
             button.addEventListener('click', decreaseQuantity);
-        });
-
-        document.querySelectorAll('.increase-btn').forEach(button => {
-            button.addEventListener('click', increaseQuantity);
         });
         document.querySelectorAll('.increase-btn-cart').forEach(button => {
             button.addEventListener('click', increaseQuantity);
@@ -158,6 +151,8 @@ function updateCartDisplay() {
     } else {
         cartContainer.innerHTML = '<p class="empty-cart">Your cart is empty.</p>';
     }
+
+    calculateTotal(); // Call calculateTotal to recalculate total products and prices
 }
 
 function removeQuantityControls(productId) {
@@ -188,7 +183,6 @@ function decreaseQuantity(event) {
         const catalogQuantitySpan = document.querySelector(`.menu-item [data-id="${productId}"]`)
             ?.parentElement.querySelector('.quantity-cont .quantity');
 
-        // Update quantity in cart
         if (existingProduct.quantity <= 0) {
             cart = cart.filter(item => item.id != productId);
             removeQuantityControls(productId);
@@ -197,13 +191,12 @@ function decreaseQuantity(event) {
             if (catalogQuantitySpan) catalogQuantitySpan.textContent = existingProduct.quantity;
         }
 
-        // If the item is removed from the cart, show 'Add to Cart' button in the menu
         if (existingProduct.quantity <= 0) {
             removeQuantityControls(productId);
         }
     }
 
-    updateCartDisplay(); 
+    updateCartDisplay();
 }
 
 function increaseQuantity(event) {
@@ -217,7 +210,6 @@ function increaseQuantity(event) {
         const catalogQuantitySpan = document.querySelector(`.menu-item [data-id="${productId}"]`)
             ?.parentElement.querySelector('.quantity-cont .quantity');
 
-        // Update quantity in both cart and menu
         cartQuantitySpan.textContent = existingProduct.quantity;
         if (catalogQuantitySpan) catalogQuantitySpan.textContent = existingProduct.quantity;
     }
@@ -225,6 +217,31 @@ function increaseQuantity(event) {
     updateCartDisplay();
 }
 
+function calculateTotal() {
+    let totalProducts = 0;
+    let totalPrice = 0;
+
+    cart.forEach(item => {
+        totalProducts += item.quantity;
+        totalPrice += item.quantity * parseFloat(item.price.replace('$', ''));
+    });
+
+    document.querySelector('.total-products').textContent = `Total Products: ${totalProducts}`;
+    document.querySelector('.total-price').textContent = `Total Price: $${totalPrice.toFixed(2)}`;
+}
+
+function saveCartToLocalStorage() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function loadCartFromLocalStorage() {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+        cart = JSON.parse(savedCart);
+    }
+    updateCartDisplay();
+    calculateTotal();
+}
 
 document.addEventListener("DOMContentLoaded", function() {
     const modal = document.getElementById("cart-modal");
@@ -245,4 +262,4 @@ document.addEventListener("DOMContentLoaded", function() {
             modal.style.display = "none";
         }
     }
-});  
+});
