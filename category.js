@@ -81,3 +81,15 @@ async function displayProducts(page) {
 // Start by fetching categories and displaying the first page of products
 fetchCategories();
 displayProducts(currentPage);
+
+//  add item in page
+function changeItemsPerPage(newItemsPerPage) {
+    productsPerPage = parseInt(newItemsPerPage);
+    currentPage = 1;
+    displayProducts(currentPage);
+    setupPagination();
+}
+// add eventlistener
+document.querySelector('#items-per-page').addEventListener('change', (e) => {
+    changeItemsPerPage(e.target.value);
+});
