@@ -36,6 +36,15 @@
         </div>
     </section>
 
+    <!-- Category and Pagination Controls -->
+    <div class="category-container"></div>
+    <select id="items-per-page">
+        <option value="10">10 per page</option>
+        <option value="20" selected>20 per page</option>
+        <option value="50">50 per page</option>
+    </select>
+    <button id="checkout-btn">Checkout</button>
+
 <!-- Cart Icon -->
 <button id="cart-icon" class="cart-icon">
     <i class="fa fa-shopping-cart" aria-hidden="true"></i>
@@ -115,4 +124,12 @@
         </div>
     </footer>
 </body>
+
+    <script>
+    // Call fetchCategories() in init() to load categories when the page loads
+    function init() {
+        fetchCategories();
+    }
+    window.onload = init;
+</script>
 </html>
