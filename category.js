@@ -4,7 +4,7 @@ async function fetchCategories() {
     try {
         const response = await fetch('https://dummyjson.com/products/categories');
         const categories = await response.json();
-        return categories;  // Pastikan ini array dengan objek kategori
+        return categories;  
     } catch (error) {
         console.error('Error fetching categories:', error);
         return [];
@@ -16,21 +16,18 @@ async function displayCategories() {
     const dropdown = document.querySelector('#category-dropdown');
     dropdown.innerHTML = '';
 
-    // Tambahkan opsi default
     const defaultOption = document.createElement('option');
     defaultOption.value = '';
     defaultOption.textContent = 'Category';
     dropdown.appendChild(defaultOption);
 
-    // Menambahkan kategori ke dalam dropdown
     categories.forEach(category => {
         const option = document.createElement('option');
-        option.value = category.slug;  // Gunakan 'slug' sebagai nilai
-        option.textContent = category.name;  // Tampilkan nama kategori
+        option.value = category.slug;  
+        option.textContent = category.name; 
         dropdown.appendChild(option);
     });
 
-    // Event listener untuk perubahan dropdown
     dropdown.addEventListener('change', () => {
         const selectedCategory = dropdown.value;
         if (selectedCategory) {
@@ -62,7 +59,6 @@ async function filterByCategory(categorySlug) {
             menuGrid.appendChild(menuItem);
         });
 
-        // Tambahkan event listener untuk tombol "Add to Cart"
         document.querySelectorAll('.add-to-cart-btn').forEach(button => {
             button.addEventListener('click', addToCart);
         });
@@ -71,7 +67,6 @@ async function filterByCategory(categorySlug) {
     }
 }
 
-// Inisialisasi kategori ketika halaman siap
 document.addEventListener("DOMContentLoaded", function() {
     displayCategories();
 });

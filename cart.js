@@ -2,11 +2,11 @@ console.log("Application initialized");
 
 let cart = [];
 const totalProducts = 200;
-let productsPerPage = 20; // Default number of products per page
+let productsPerPage = 20; 
 let totalPages = Math.ceil(totalProducts / productsPerPage);
 let currentPage = 1;
-let searchQuery = '';  // Store the search query
-let sortOrder = '';  // New variable to store the sorting order
+let searchQuery = '';  
+let sortOrder = '';  
 
 async function fetchProducts(page, searchQuery = '', sortOrder = '') {
     let url = `https://dummyjson.com/products?limit=${productsPerPage}&skip=${(page - 1) * productsPerPage}`;
@@ -20,7 +20,6 @@ async function fetchProducts(page, searchQuery = '', sortOrder = '') {
 
     let products = data.products;
 
-    // Apply sorting based on price
     if (sortOrder === 'low-to-high') {
         products = products.sort((a, b) => a.price - b.price);
     } else if (sortOrder === 'high-to-low') {
@@ -64,7 +63,7 @@ function handleSearch() {
     searchBar.addEventListener('input', () => {
         searchQuery = searchBar.value.toLowerCase();
         currentPage = 1;
-        displayProducts(currentPage, searchQuery, sortOrder); // Pass sortOrder for consistent sorting
+        displayProducts(currentPage, searchQuery, sortOrder); 
         setupPagination();
     });
 }
@@ -73,7 +72,7 @@ function handleSort() {
     const sortDropdown = document.getElementById('sort-dropdown');
     sortDropdown.addEventListener('change', () => {
         sortOrder = sortDropdown.value;
-        displayProducts(currentPage, searchQuery, sortOrder); // Update display with sorted products
+        displayProducts(currentPage, searchQuery, sortOrder); 
     });
 }
 
@@ -81,10 +80,10 @@ function handleItemsPerPageChange() {
     const itemsPerPageDropdown = document.getElementById('items-per-page-dropdown');
     itemsPerPageDropdown.addEventListener('change', () => {
         productsPerPage = parseInt(itemsPerPageDropdown.value);
-        totalPages = Math.ceil(totalProducts / productsPerPage); // Update total pages
-        currentPage = 1; // Reset to first page
-        displayProducts(currentPage, searchQuery, sortOrder); // Update display
-        setupPagination(); // Re-setup pagination
+        totalPages = Math.ceil(totalProducts / productsPerPage); 
+        currentPage = 1; 
+        displayProducts(currentPage, searchQuery, sortOrder); 
+        setupPagination();
     });
 }
 
@@ -100,7 +99,7 @@ function setupPagination() {
 
         pageButton.addEventListener('click', () => {
             currentPage = page;
-            displayProducts(currentPage, searchQuery, sortOrder); // Pass sortOrder to maintain sorting across pages
+            displayProducts(currentPage, searchQuery, sortOrder); 
             updatePaginationButtons();
         });
 
@@ -120,13 +119,12 @@ function updatePaginationButtons() {
 
 async function init() {
     await displayProducts(currentPage, searchQuery, sortOrder);
-    loadCart(); // Memuat cart dari Local Storage saat halaman dimuat
+    loadCart(); 
     await displayProducts(currentPage);
     setupPagination();
-    updateCartDisplay(); // Perbarui tampilan keranjang setelah memuat data
-    handleSearch(); // Initialize search functionality
-    handleSort(); // Initialize sort functionality
-    handleItemsPerPageChange(); // Initialize items per page functionality
+    updateCartDisplay(); 
+    handleSearch(); 
+    handleItemsPerPageChange(); 
 }
 
 init();
@@ -293,20 +291,16 @@ function calculateTotal() {
     document.querySelector('.total-price').textContent = `Total Price: $${totalPrice.toFixed(2)}`;
 }
 
-// Simpan cart ke Local Storage
 function saveCart() {
     localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// Ambil cart dari Local Storage
 function loadCart() {
     const storedCart = localStorage.getItem('cart');
     if (storedCart) {
         cart = JSON.parse(storedCart);
     }
 }
-
-
 
 function checkout () {
     alert('Thank you for your purchase!');
@@ -319,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const modal = document.getElementById("cart-modal");
     const cartIcon = document.getElementById("cart-icon");
     const closeModal = document.getElementById("close-modal");
-    const checkoutBtn = document.getElementById("checkout-btn"); // Ensure this matches the button's ID
+    const checkoutBtn = document.getElementById("checkout-btn"); 
 
     cartIcon.onclick = function() {
         modal.style.display = "block";
@@ -336,7 +330,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    if (checkoutBtn) { // Ensure the button exists before adding the event listener
+    if (checkoutBtn) { 
         checkoutBtn.addEventListener('click', checkout);
     }
 });
